@@ -1,0 +1,41 @@
+---
+# tasks file for ansible-role-preupgrade-assistant-el5toel7
+
+- name: 1.0 | Enable a RHSM repository
+  rhsm_repository:
+    name: "rhel-5-server-rpms"
+  tags:
+    - "1.0"
+
+- name: 2.0 | Install the latest version of preupgrade-assistant
+  yum:
+    name: "{{ item }}"
+    state: latest
+  loop:
+    - "preupgrade-assistant"
+    - "preupgrade-assistant-el5toel7-data"
+  tags:
+    - "2.0"
+
+- name: 3.0 | Run the preupg command
+  shell: "preupg"
+  tags:
+    - "3.0"
+
+- name: 4.0 | Fetch the results
+  fetch:
+    src: "/root/preupgrade/result.html"
+    dest: "/var/www/html/preupg-{{ inventory_hostname }}.html"
+    flat: yes
+  tags:
+    - "4.0"
+
+- name: 5.0 | Remove the preupgrade-assistant
+  yum:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - "preupgrade-assistant"
+    - "preupgrade-assistant-el5toel7-data"
+  tags:
+    - "5.0"
